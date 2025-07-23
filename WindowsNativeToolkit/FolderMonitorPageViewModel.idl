@@ -1,0 +1,11 @@
+namespace WindowsNativeToolkit
+{
+    // View-model exposed to XAML — implements INotifyPropertyChanged
+    [bindable]
+    [default_interface]
+    runtimeclass FolderMonitorPageViewModel : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        FolderMonitorPageViewModel();
+        Windows.Foundation.Collections.IObservableVector<String> Changes { get; };
+    }
+}

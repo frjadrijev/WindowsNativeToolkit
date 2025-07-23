@@ -1,0 +1,22 @@
+//import "oaidl.idl";
+//import "ocidl.idl";
+
+namespace ToolkitCore
+{
+    enum ChangeType
+    {
+        Added = 0,
+        Removed = 1,
+        Modified = 2
+    };
+
+    [default_interface]
+    runtimeclass FileChange
+    {
+        FileChange();
+        FileChange(String path, ChangeType type, UInt64 timestamp);
+        String      Path;
+        ChangeType  Type;
+        UInt64      Timestamp;
+    };
+}

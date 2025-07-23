@@ -1,0 +1,15 @@
+import "FileChange.idl"; // Added import to resolve FileChange type
+
+namespace ToolkitCore
+{
+    delegate void FileWatcherChangedHandler(FileWatcherService sender, FileChange change);
+
+    [default_interface]
+    runtimeclass FileWatcherService
+    {
+        FileWatcherService();
+        void Start(String folder);
+        void Stop();
+        event FileWatcherChangedHandler Changed;
+    };
+}

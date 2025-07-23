@@ -1,0 +1,46 @@
+﻿import "oaidl.idl";
+import "ocidl.idl";
+
+namespace ToolkitCore
+{
+    runtimeclass FileChange
+    {
+        String  Path;
+        String  Type;
+        UInt64  Timestamp;
+    };
+
+    [default_interface]
+    runtimeclass FileWatcherService
+    {
+        FileWatcherService();
+        void Start(String folder);
+        void Stop();
+    };
+
+    //interface IFileWatcherService
+    //{
+    //    void Start(String folder);
+    //    void Stop();
+    //};
+
+    //[default_interface]
+    //runtimeclass FileWatcherService : IFileWatcherService
+    //{
+    //    void Start(String folder);
+    //    void Stop();
+    //};
+        
+    /* interface IFileWatcherNative
+    {
+        void Start(String folder);
+        void Stop();
+    };
+
+    [default_interface]
+    runtimeclass FileWatcherNative : IFileWatcherNative
+    {
+        void Start(String folder);
+        void Stop();
+    };*/
+}
