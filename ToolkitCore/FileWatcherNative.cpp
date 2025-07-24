@@ -57,9 +57,7 @@ namespace native::ToolkitCore
                         wchar_t pathBuf[MAX_PATH]{};
                         PathCchCombine(pathBuf, std::size(pathBuf), dir.c_str(), L"*");
 
-                        winrt::ToolkitCore::FileChange change =
-                            winrt::make<winrt::ToolkitCore::FileChange>(pathBuf, winrt::ToolkitCore::ChangeType::Modified, static_cast<uint64_t>(ts));
-
+                        winrt::ToolkitCore::FileChange change{ winrt::hstring(pathBuf), winrt::ToolkitCore::ChangeType::Modified, static_cast<uint64_t>(ts) };
                         _callback(change);
 
                         // re-arm the Win32 watch

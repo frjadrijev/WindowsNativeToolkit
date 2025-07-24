@@ -119,6 +119,7 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FileChange.cpp" />
     <ClCompile Include="FileWatcherNative.cpp" />
     <ClCompile Include="FileWatcherService.cpp" />
     <ClCompile Include="PathHelpers.cpp" />

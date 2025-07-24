@@ -3,7 +3,7 @@
 
 namespace winrt::ToolkitCore::implementation
 {
-    struct FileChange final : FileChangeT<FileChange>      // generated CRTP helper
+    struct FileChange : FileChangeT<FileChange>      // generated CRTP helper
     {
         // default ctor – nothing to do
         FileChange() = default;

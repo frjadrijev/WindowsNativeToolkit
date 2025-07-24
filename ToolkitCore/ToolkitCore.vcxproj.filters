@@ -30,6 +30,9 @@
     <ClCompile Include="FileWatcherNative.cpp">
       <Filter>Services</Filter>
     </ClCompile>
+    <ClCompile Include="FileChange.cpp">
+      <Filter>Models</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
