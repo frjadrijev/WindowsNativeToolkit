@@ -8,15 +8,15 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="11517368-edae-46b0-b0ef-c97467096712"
-    Publisher="CN=fjadrijev"
+    Name="833f7d76-d448-446d-9cdf-a7c707abfa01"
+    Publisher="CN=frjad"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="11517368-edae-46b0-b0ef-c97467096712" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="833f7d76-d448-446d-9cdf-a7c707abfa01" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>WindowsNativeToolkit</DisplayName>
-    <PublisherDisplayName>fjadrijev</PublisherDisplayName>
+    <PublisherDisplayName>frjad</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 

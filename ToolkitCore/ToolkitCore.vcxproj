@@ -141,7 +141,7 @@
     <Midl Include="FileChange.idl" />
     <Midl Include="FileWatcherService.idl" />
   </ItemGroup>
-  <ItemGroup>
+  <!--<ItemGroup>
     <Reference Include="Microsoft.Windows.AppLifecycle">
       <HintPath>$(SolutionDir)packages\Microsoft.WindowsAppSDK.1.7.250606001\lib\uap10.0\Microsoft.Windows.AppLifecycle.winmd</HintPath>
     </Reference>
@@ -172,15 +172,15 @@
     <Reference Include="Microsoft.Windows.Win32.UI.WindowManagement">
       <HintPath>$(SolutionDir)packages\Microsoft.WindowsAppSDK.1.7.250606001\lib\uap10.0\Microsoft.Windows.Win32.UI.WindowManagement.winmd</HintPath>
     </Reference>
-  </ItemGroup>
+  </ItemGroup>-->
   <!-- Put this just before the Microsoft.Cpp.targets import -->
-  <PropertyGroup>
-    <!-- enable the C++/WinRT tool-chain for this project -->
+  <!--<PropertyGroup>
+    --><!-- enable the C++/WinRT tool-chain for this project --><!--
     <CppWinRTEnabled>true</CppWinRTEnabled>
-    <!-- set to true only when you need very verbose build output -->
+    --><!-- set to true only when you need very verbose build output --><!--
     <CppWinRTVerbose>true</CppWinRTVerbose>
     <EnableMsixTooling>false</EnableMsixTooling>
-  </PropertyGroup>
+  </PropertyGroup>-->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Microsoft.Windows.ImplementationLibrary.1.0.250325.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.250325.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
