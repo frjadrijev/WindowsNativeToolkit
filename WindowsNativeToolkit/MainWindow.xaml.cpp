@@ -21,4 +21,12 @@ namespace winrt::WindowsNativeToolkit::implementation
     {
         throw hresult_not_implemented();
     }
+
+    // Add this method definition to your MainWindow implementation file
+    void MainWindow::myButton_Click(
+        winrt::Windows::Foundation::IInspectable const& sender,
+        winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args)
+    {
+        // TODO: Add your button click logic here
+    }
 }

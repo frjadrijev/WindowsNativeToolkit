@@ -1,0 +1,9 @@
+namespace WindowsNativeToolkit
+{
+    [bindable]
+    [default_interface]
+    runtimeclass FolderMonitorPageViewModel
+    {
+        FolderMonitorPageViewModel();
+    }
+}

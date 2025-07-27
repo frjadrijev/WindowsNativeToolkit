@@ -1,0 +1,9 @@
+namespace WindowsNativeToolkit
+{
+    [default_interface]
+    runtimeclass FolderMonitorPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        FolderMonitorPage();
+        Int32 MyProperty;
+    }
+}

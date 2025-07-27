@@ -1,0 +1,24 @@
+#include "pch.h"
+#include "FolderMonitorPage.xaml.h"
+#if __has_include("FolderMonitorPage.g.cpp")
+#include "FolderMonitorPage.g.cpp"
+#endif
+
+using namespace winrt;
+using namespace Microsoft::UI::Xaml;
+
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
+
+namespace winrt::WindowsNativeToolkit::implementation
+{
+    int32_t FolderMonitorPage::MyProperty()
+    {
+        throw hresult_not_implemented();
+    }
+
+    void FolderMonitorPage::MyProperty(int32_t /* value */)
+    {
+        throw hresult_not_implemented();
+    }
+}

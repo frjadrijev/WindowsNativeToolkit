@@ -1,12 +1,12 @@
 #pragma once
 
-#include "MainWindow.g.h"
+#include "FolderMonitorPage.g.h"
 
 namespace winrt::WindowsNativeToolkit::implementation
 {
-    struct MainWindow : MainWindowT<MainWindow>
+    struct FolderMonitorPage : FolderMonitorPageT<FolderMonitorPage>
     {
-        MainWindow()
+        FolderMonitorPage()
         {
             // Xaml objects should not call InitializeComponent during construction.
             // See https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
@@ -14,13 +14,12 @@ namespace winrt::WindowsNativeToolkit::implementation
 
         int32_t MyProperty();
         void MyProperty(int32_t value);
-        void myButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
     };
 }
 
 namespace winrt::WindowsNativeToolkit::factory_implementation
 {
-    struct MainWindow : MainWindowT<MainWindow, implementation::MainWindow>
+    struct FolderMonitorPage : FolderMonitorPageT<FolderMonitorPage, implementation::FolderMonitorPage>
     {
     };
 }

@@ -1,5 +1,4 @@
-﻿// FileWatcherService.h
-#pragma once
+﻿#pragma once
 #include "pch.h"
 
 #include "FileWatcherService.g.h"   // generated partial class
