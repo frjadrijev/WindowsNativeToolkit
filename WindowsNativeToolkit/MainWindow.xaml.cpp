@@ -3,6 +3,7 @@
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
+#include <winrt/Windows.UI.Xaml.Interop.h>
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
@@ -12,21 +13,9 @@ using namespace Microsoft::UI::Xaml;
 
 namespace winrt::WindowsNativeToolkit::implementation
 {
-    int32_t MainWindow::MyProperty()
+    void MainWindow::OpenFolderPage_Click(Windows::Foundation::IInspectable const& /*sender*/, Microsoft::UI::Xaml::RoutedEventArgs const& /*args*/)
     {
-        throw hresult_not_implemented();
-    }
-
-    void MainWindow::MyProperty(int32_t /* value */)
-    {
-        throw hresult_not_implemented();
-    }
-
-    // Add this method definition to your MainWindow implementation file
-    void MainWindow::myButton_Click(
-        winrt::Windows::Foundation::IInspectable const& sender,
-        winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args)
-    {
-        // TODO: Add your button click logic here
+        // <Frame x:Name="contentFrame"/> in MainWindow.xaml
+        contentFrame().Navigate(xaml_typename<WindowsNativeToolkit::FolderMonitorPage>());
     }
 }

@@ -9,7 +9,12 @@
     mc:Ignorable="d"
     Title="WindowsNativeToolkit">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </StackPanel>
+    <Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Button Content="Open folder page"
+                Click="OpenFolderPage_Click"/>
+        </StackPanel>
+
+        <Frame x:Name="contentFrame"/>
+    </Grid>
 </Window>

@@ -3,6 +3,7 @@
 #if __has_include("FolderMonitorPage.g.cpp")
 #include "FolderMonitorPage.g.cpp"
 #endif
+#include <winrt/WindowsNativeToolkit.h> 
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
@@ -12,13 +13,14 @@ using namespace Microsoft::UI::Xaml;
 
 namespace winrt::WindowsNativeToolkit::implementation
 {
-    int32_t FolderMonitorPage::MyProperty()
+    void FolderMonitorPage::Initialize()
     {
-        throw hresult_not_implemented();
+        m_vm = make<FolderMonitorPageViewModel>();
+        DataContext(m_vm);                     // FrameworkElement::DataContext
     }
 
-    void FolderMonitorPage::MyProperty(int32_t /* value */)
-    {
-        throw hresult_not_implemented();
+    WindowsNativeToolkit::FolderMonitorPageViewModel FolderMonitorPage::ViewModel() const noexcept 
+    { 
+        return m_vm; 
     }
 }

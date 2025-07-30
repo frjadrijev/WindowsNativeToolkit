@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FolderMonitorPage.g.h"
+#include <FolderMonitorPageViewModel.h>
 
 namespace winrt::WindowsNativeToolkit::implementation
 {
@@ -10,10 +11,12 @@ namespace winrt::WindowsNativeToolkit::implementation
         {
             // Xaml objects should not call InitializeComponent during construction.
             // See https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
+            Initialize();
         }
-
-        int32_t MyProperty();
-        void MyProperty(int32_t value);
+        WindowsNativeToolkit::FolderMonitorPageViewModel ViewModel() const noexcept;
+    private:
+        void Initialize(); 
+        WindowsNativeToolkit::FolderMonitorPageViewModel m_vm{ nullptr };
     };
 }
 
