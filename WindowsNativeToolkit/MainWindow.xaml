@@ -10,11 +10,16 @@
     Title="WindowsNativeToolkit">
 
     <Grid>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <!-- UI row with the button -->
+        <StackPanel Orientation="Horizontal"
+                    Margin="12,12,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top">
             <Button Content="Open folder page"
-                Click="OpenFolderPage_Click"/>
+                    Click="OpenFolderPage_Click"/>
         </StackPanel>
 
+        <!-- the host frame for pages -->
         <Frame x:Name="contentFrame"/>
     </Grid>
 </Window>

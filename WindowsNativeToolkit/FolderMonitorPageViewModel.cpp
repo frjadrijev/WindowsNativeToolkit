@@ -9,12 +9,16 @@ namespace winrt::WindowsNativeToolkit::implementation
     hstring FolderMonitorPageViewModel::FolderPath() const { return m_folder; }
     void FolderMonitorPageViewModel::FolderPath(hstring const& path)
     {
-        if (m_folder != path)
-        {
-            m_folder = path;
-            m_propertyChanged(*this,Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"FolderPath" });
-        }
+        m_folder = path;
+        RaisePropertyChanged(L"FolderPath");
     }
+
+    void FolderMonitorPageViewModel::RaisePropertyChanged(hstring const& name)
+    {
+        if (m_propertyChanged)
+            m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ name });
+    }
+
 
     // wire-up service
     void FolderMonitorPageViewModel::Initialize()
@@ -27,5 +31,7 @@ namespace winrt::WindowsNativeToolkit::implementation
                     // update properties, collections, etc.
                 }
             });
+
+        FolderPath(L"Hello binding – it works!");
     }
 }

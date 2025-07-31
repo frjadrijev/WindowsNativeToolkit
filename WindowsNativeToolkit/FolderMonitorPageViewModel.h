@@ -2,7 +2,8 @@
 
 #include "FolderMonitorPageViewModel.g.h"
 #include <winrt/ToolkitCore.h>   // only include the projection
-#include <winrt/Windows.UI.Xaml.Data.h>
+//#include <winrt/Windows.UI.Xaml.Data.h>
+#include <winrt/Microsoft.UI.Xaml.Data.h>
 
 namespace winrt::WindowsNativeToolkit::implementation
 {
@@ -18,10 +19,12 @@ namespace winrt::WindowsNativeToolkit::implementation
 
     private:
         void Initialize();
+        void RaisePropertyChanged(hstring const& name);
+
         ToolkitCore::FileWatcherService m_fileWatcherService;
         winrt::hstring                  m_folder;   
         // auto-generated event field by [bindable]
-        Windows::UI::Xaml::Data::PropertyChangedEventHandler m_propertyChanged;
+        Microsoft::UI::Xaml::Data::PropertyChangedEventHandler m_propertyChanged;
     };
 }
 

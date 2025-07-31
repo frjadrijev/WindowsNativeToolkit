@@ -10,11 +10,11 @@
     xmlns:vm="using:WindowsNativeToolkit"
     x:DataType="vm:FolderMonitorPageViewModel">
 
-    <!--<Page.DataContext>
-        <vm:FolderMonitorPageViewModel/>
-    </Page.DataContext>-->
-
-    <Grid Padding="12">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <TextBlock Text="Folder Monitor Page"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="32"/>
         <TextBlock Text="{Binding FolderPath, Mode=OneWay}" FontSize="16"/>
     </Grid>
 </Page>
