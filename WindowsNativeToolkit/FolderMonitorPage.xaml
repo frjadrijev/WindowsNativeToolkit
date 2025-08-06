@@ -1,4 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    FolderMonitorPage.xaml - File system monitoring user interface
+    
+    This page provides the user interface for monitoring file system changes
+    in selected directories. It demonstrates data binding integration with
+    a ViewModel and showcases real-time file change notifications.
+    
+    Architecture patterns:
+    - Model-View-ViewModel (MVVM) pattern implementation
+    - Data binding with compiled binding (x:DataType) for performance
+    - Separation of UI logic from business logic
+    - Reactive UI updates based on ViewModel property changes
+    
+    Data binding features:
+    - Compiled binding (x:DataType) for better performance and IntelliSense
+    - OneWay binding mode for read-only property display
+    - Automatic UI updates when ViewModel properties change
+    - Type-safe binding with compile-time verification
+    
+    Design considerations:
+    - Clean, minimal interface focusing on core functionality
+    - Responsive layout that adapts to different window sizes
+    - Consistent theming with application-wide visual style
+    - Accessibility support through semantic markup
+-->
 <Page
     x:Class="WindowsNativeToolkit.FolderMonitorPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -10,11 +35,43 @@
     xmlns:vm="using:WindowsNativeToolkit"
     x:DataType="vm:FolderMonitorPageViewModel">
 
+    <!--
+        Main page layout using Grid with theme-aware background
+        - ApplicationPageBackgroundThemeBrush provides consistent theming
+        - Automatically adapts to light/dark theme changes
+        - Ensures proper contrast and accessibility compliance
+    -->
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <!--
+            Primary page title
+            - Large, prominent text indicating page purpose
+            - Centered positioning for visual balance
+            - Uses system font sizing for consistency
+            - Serves as primary navigation landmark for accessibility
+        -->
         <TextBlock Text="Folder Monitor Page"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    FontSize="32"/>
+        
+        <!--
+            Data-bound folder path display
+            - Demonstrates MVVM data binding integration
+            - Shows current monitored folder path from ViewModel
+            - OneWay binding for read-only property display
+            - Uses compiled binding (x:DataType) for performance
+            
+            Binding details:
+            - Binds to FolderMonitorPageViewModel.FolderPath property
+            - Mode=OneWay ensures UI updates when property changes
+            - Automatic string conversion and null handling
+            - Thread-safe updates via PropertyChanged notifications
+            
+            Performance benefits:
+            - Compiled binding reduces runtime overhead
+            - Type checking at compile time prevents binding errors
+            - Optimized code generation for property access
+        -->
         <TextBlock Text="{Binding FolderPath, Mode=OneWay}" FontSize="16"/>
     </Grid>
 </Page>

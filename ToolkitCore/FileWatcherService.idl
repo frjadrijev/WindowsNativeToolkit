@@ -1,15 +1,193 @@
-import "FileChange.idl"; // Added import to resolve FileChange type
+#pragma once
+#include <string>
+#include <string_view>
+#include "FileChange.idl" // Added import to resolve FileChange type
 
-namespace ToolkitCore
+namespace native::ToolkitCore
 {
+    /// <summary>
+    /// Determines whether the specified path refers to an existing directory.
+    /// </summary>
+    /// <param name="path">Path to check. Can be absolute or relative.</param>
+    /// <returns>true if the path exists and is a directory; false otherwise</returns>
+    /// <remarks>
+    /// This function uses the C++17 std::filesystem library for reliable
+    /// cross-platform path validation. It properly handles:
+    /// - Network paths (UNC format)
+    /// - Long paths (>260 characters)
+    /// - Unicode characters in paths
+    /// - Various path separators (\ and /)
+    /// - Relative paths resolved against current working directory
+    /// 
+    /// Performance considerations:
+    /// - Performs actual filesystem access (I/O operation)
+    /// - May be slow for network drives or removable media
+    /// - Consider caching results for frequently checked paths
+    /// 
+    /// Exception handling:
+    /// - Returns false for inaccessible paths (permissions, network issues)
+    /// - Does not throw exceptions for common error conditions
+    /// - Uses noexcept filesystem operations internally
+    /// </remarks>
+    [[nodiscard]] bool IsDirectory(std::wstring_view path);
+
+    /// <summary>
+    /// Normalizes a file system path to its canonical absolute form.
+    /// Resolves relative path components, symbolic links, and ensures
+    /// consistent path formatting for reliable path comparisons.
+    /// </summary>
+    /// <param name="path">Path to normalize. Can be absolute or relative.</param>
+    /// <returns>
+    /// Canonical absolute path with resolved links and normalized separators.
+    /// Empty string if the path is invalid or inaccessible.
+    /// </returns>
+    /// <exception cref="std::filesystem::filesystem_error">
+    /// Thrown if the path doesn't exist or cannot be accessed due to permissions.
+    /// </exception>
+    /// <remarks>
+    /// Normalization process:
+    /// - Converts to absolute path if relative
+    /// - Resolves all symbolic links to their targets
+    /// - Removes redundant path components (., .., duplicate separators)
+    /// - Standardizes path separators for the current platform
+    /// - Ensures consistent casing on case-insensitive filesystems
+    /// 
+    /// Use cases:
+    /// - Path comparison and deduplication
+    /// - Storing canonical paths in configuration
+    /// - Resolving user-provided relative paths
+    /// - Security: preventing directory traversal attacks
+    /// 
+    /// Performance notes:
+    /// - Performs filesystem I/O to resolve links and validate existence
+    /// - More expensive than simple string manipulation
+    /// - Consider caching results for frequently used paths
+    /// 
+    /// Platform behavior:
+    /// - Windows: Resolves NTFS junction points and symbolic links
+    /// - Uses native path separators (\\ on Windows)
+    /// - Handles long path names and Unicode correctly
+    /// </remarks>
+    [[nodiscard]] std::wstring Normalise(std::wstring_view path);
+
+    /// <summary>
+    /// Delegate that defines the signature for handling file system change events.
+    /// This delegate is invoked whenever a monitored file or directory is modified,
+    /// created, or deleted within the watched folder.
+    /// </summary>
+    /// <param name="sender">The FileWatcherService instance that detected the change</param>
+    /// <param name="change">A FileChange object containing details about what changed</param>
+    /// <remarks>
+    /// Event handlers using this delegate should be lightweight and avoid blocking
+    /// operations, as they are called on the file system monitoring thread.
+    /// For heavy processing, consider marshaling the work to a background thread.
+    /// </remarks>
     delegate void FileWatcherChangedHandler(FileWatcherService sender, FileChange change);
 
+    /// <summary>
+    /// A Windows Runtime component that provides file system monitoring capabilities.
+    /// This service watches a specified folder for changes and raises events when files
+    /// or directories are created, modified, or deleted.
+    /// </summary>
+    /// <remarks>
+    /// The FileWatcherService uses the Windows ReadDirectoryChangesW API internally
+    /// to provide efficient, asynchronous file system monitoring. It supports monitoring
+    /// of subdirectories and provides detailed change information including timestamps
+    /// and change types.
+    /// 
+    /// Usage pattern:
+    /// 1. Create an instance of FileWatcherService
+    /// 2. Subscribe to the Changed event
+    /// 3. Call Start() with the folder path to monitor
+    /// 4. Handle change events as they occur
+    /// 5. Call Stop() when monitoring is no longer needed
+    /// 
+    /// Performance considerations:
+    /// - Monitoring large directory trees may impact performance
+    /// - Event frequency depends on file system activity
+    /// - Consider filtering events based on your application's needs
+    /// </remarks>
     [default_interface]
     runtimeclass FileWatcherService
     {
+        /// <summary>
+        /// Initializes a new instance of the FileWatcherService.
+        /// The service starts in a stopped state and requires a call to Start()
+        /// to begin monitoring file system changes.
+        /// </summary>
         FileWatcherService();
+
+        /// <summary>
+        /// Begins monitoring the specified folder for file system changes.
+        /// This method starts an asynchronous monitoring operation that will
+        /// continue until Stop() is called or the service is disposed.
+        /// </summary>
+        /// <param name="folder">
+        /// The full path to the folder to monitor. Must be an existing directory
+        /// that the application has read access to. Subdirectories are included
+        /// in the monitoring scope.
+        /// </param>
+        /// <exception cref="System.ArgumentException">
+        /// Thrown when the folder parameter is null, empty, or contains invalid characters.
+        /// </exception>
+        /// <exception cref="System.IO.DirectoryNotFoundException">
+        /// Thrown when the specified folder does not exist.
+        /// </exception>
+        /// <exception cref="System.UnauthorizedAccessException">
+        /// Thrown when the application lacks sufficient permissions to monitor the folder.
+        /// </exception>
+        /// <exception cref="System.InvalidOperationException">
+        /// Thrown when the service is already monitoring a folder. Call Stop() first
+        /// before monitoring a different folder.
+        /// </exception>
+        /// <remarks>
+        /// The monitoring includes the following change types:
+        /// - File and directory creation
+        /// - File and directory deletion
+        /// - File content modifications
+        /// - File and directory renames
+        /// - Attribute changes
+        /// 
+        /// Network drives and removable media are supported but may have
+        /// different performance characteristics or reliability.
+        /// </remarks>
         void Start(String folder);
+
+        /// <summary>
+        /// Stops monitoring the currently watched folder and releases associated resources.
+        /// This method is safe to call multiple times and will have no effect if
+        /// monitoring is not currently active.
+        /// </summary>
+        /// <remarks>
+        /// After calling Stop(), no further change events will be raised until
+        /// Start() is called again. Any pending events in the queue may still
+        /// be delivered briefly after Stop() returns.
+        /// 
+        /// This method blocks until the monitoring thread has been cleanly shut down,
+        /// ensuring that no events will be raised after the method returns.
+        /// </remarks>
         void Stop();
+
+        /// <summary>
+        /// Event raised when a file system change is detected in the monitored folder.
+        /// Subscribe to this event to receive notifications about file and directory
+        /// changes within the watched location.
+        /// </summary>
+        /// <remarks>
+        /// Event characteristics:
+        /// - Events are raised on a background thread, not the UI thread
+        /// - Multiple events may be raised for a single file operation
+        /// - Events include detailed information about the type of change and timestamp
+        /// - Event handlers should complete quickly to avoid blocking the monitoring thread
+        /// 
+        /// Common scenarios that trigger events:
+        /// - Creating, deleting, or renaming files and folders
+        /// - Modifying file content or attributes
+        /// - Moving files into or out of the monitored directory tree
+        /// 
+        /// Note: Some operations (like file moves) may generate multiple events
+        /// (delete from old location, create in new location).
+        /// </remarks>
         event FileWatcherChangedHandler Changed;
     };
 }

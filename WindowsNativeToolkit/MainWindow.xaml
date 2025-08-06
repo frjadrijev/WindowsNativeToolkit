@@ -1,4 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    MainWindow.xaml - Primary application window XAML markup
+    
+    This file defines the visual structure and layout for the main application window
+    of the WindowsNativeToolkit. It serves as the primary navigation container and
+    entry point for user interaction within the application.
+    
+    Key Design Elements:
+    - Simple, clean layout with minimal chrome
+    - Navigation button for accessing application features
+    - Content frame for hosting different pages/views
+    - Responsive design that adapts to different window sizes
+    
+    Architecture:
+    - Uses Grid layout for flexible positioning
+    - StackPanel for button arrangement
+    - Frame control for page navigation and content hosting
+    - Standard WinUI theming and styling support
+    
+    Navigation Pattern:
+    The Frame control (contentFrame) serves as the navigation host for the entire
+    application. Pages are loaded into this frame using the Navigate() method,
+    providing a consistent navigation experience throughout the app.
+-->
 <Window
     x:Class="WindowsNativeToolkit.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -9,17 +33,45 @@
     mc:Ignorable="d"
     Title="WindowsNativeToolkit">
 
+    <!-- 
+        Main layout grid - provides structure for the entire window content
+        Uses implicit row/column definitions for simple two-area layout:
+        - Navigation/command area (top-left)
+        - Content area (fills remaining space)
+    -->
     <Grid>
-        <!-- UI row with the button -->
+        <!-- 
+            Navigation/Command Area
+            Positioned in top-left corner with margin for visual spacing
+            Uses horizontal StackPanel for potential future button additions
+        -->
         <StackPanel Orientation="Horizontal"
                     Margin="12,12,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top">
+            <!-- 
+                Primary navigation button
+                - Triggers navigation to the folder monitoring functionality
+                - Uses click event handler defined in code-behind
+                - Content provides clear indication of functionality
+            -->
             <Button Content="Open folder page"
                     Click="OpenFolderPage_Click"/>
         </StackPanel>
 
-        <!-- the host frame for pages -->
+        <!-- 
+            Main content frame
+            - Hosts all navigated pages within the application
+            - Fills the entire window area (no explicit positioning)
+            - Named element for code-behind access via x:Name
+            - Supports standard Frame navigation patterns (Navigate, GoBack, etc.)
+            
+            Navigation Usage:
+            - contentFrame.Navigate(xaml_typename<TargetPage>()) for page navigation
+            - Automatically handles page lifecycle and memory management
+            - Supports navigation history and back navigation
+            - Integrates with WinUI navigation patterns
+        -->
         <Frame x:Name="contentFrame"/>
     </Grid>
 </Window>

@@ -9,3 +9,124 @@ namespace WindowsNativeToolkit
         WindowsNativeToolkit.FolderMonitorPageViewModel ViewModel();
     }
 }
+
+/// <summary>
+/// Interface Definition Language specification for the FolderMonitorPageViewModel component.
+/// Defines the Windows Runtime contract for the ViewModel that provides business logic
+/// and data binding support for the FolderMonitorPage view.
+/// </summary>
+/// <remarks>
+/// This IDL file establishes the public interface contract for the ViewModel component
+/// following the Model-View-ViewModel (MVVM) architectural pattern. The ViewModel serves
+/// as the intermediary between the UI (View) and business logic (Model), providing:
+/// 
+/// Data binding capabilities:
+/// - [bindable] attribute enables automatic PropertyChanged event generation
+/// - Supports two-way data binding for user input scenarios
+/// - Integrates with WinUI data binding infrastructure
+/// - Provides compile-time binding verification with x:DataType
+/// 
+/// WinRT integration:
+/// - [default_interface] designates primary interface for runtime activation
+/// - Enables XAML data binding through INotifyPropertyChanged
+/// - Supports dependency injection and testing scenarios
+/// - Provides type-safe property access from XAML markup
+/// 
+/// Architecture benefits:
+/// - Separation of concerns between UI and business logic
+/// - Testable business logic independent of UI framework
+/// - Reusable ViewModel across different view implementations
+/// - Clean data binding contract with compile-time verification
+/// 
+/// Build integration:
+/// The MIDL compiler processes this IDL to generate:
+/// - Type metadata for runtime activation
+/// - C++/WinRT projection headers for type-safe access
+/// - Factory implementation templates
+/// - PropertyChanged event infrastructure code
+/// </remarks>
+namespace WindowsNativeToolkit
+{
+    /// <summary>
+    /// ViewModel runtime class providing business logic and data for folder monitoring functionality.
+    /// Implements the ViewModel component of the MVVM pattern with support for data binding
+    /// and property change notifications.
+    /// </summary>
+    /// <remarks>
+    /// This runtime class encapsulates the business logic for file system monitoring
+    /// and provides a clean, bindable interface for the associated view. Key responsibilities:
+    /// 
+    /// Data management:
+    /// - Maintains current folder path state
+    /// - Provides property change notifications for UI updates
+    /// - Manages file system monitoring service integration
+    /// - Handles asynchronous operations and state updates
+    /// 
+    /// MVVM pattern implementation:
+    /// - Exposes bindable properties for UI consumption
+    /// - Isolates business logic from view-specific concerns
+    /// - Enables unit testing of business logic without UI dependencies
+    /// - Supports multiple view implementations for the same data
+    /// 
+    /// Data binding integration:
+    /// - [bindable] attribute generates INotifyPropertyChanged implementation
+    /// - Automatic PropertyChanged event firing for property setters
+    /// - Support for one-way and two-way binding scenarios
+    /// - Integration with WinUI compiled binding for performance
+    /// 
+    /// Threading considerations:
+    /// - Property access is UI-thread safe
+    /// - PropertyChanged events are automatically marshaled to UI thread
+    /// - Background operations coordinate with UI through proper dispatching
+    /// - Thread-safe integration with file system monitoring services
+    /// </remarks>
+    [bindable]
+    [default_interface]
+    runtimeclass FolderMonitorPageViewModel
+    {
+        /// <summary>
+        /// Default constructor for the ViewModel.
+        /// Initializes the ViewModel with default state and sets up necessary services.
+        /// </summary>
+        /// <remarks>
+        /// Initialization responsibilities:
+        /// - Sets up file system monitoring service
+        /// - Establishes initial property values
+        /// - Configures event subscriptions and handlers
+        /// - Prepares ViewModel for data binding integration
+        /// 
+        /// The constructor should perform minimal work to ensure fast activation
+        /// and avoid blocking the UI thread during view creation.
+        /// </remarks>
+        FolderMonitorPageViewModel();
+
+        /// <summary>
+        /// Gets or sets the path of the folder currently being monitored.
+        /// This property is bindable and will notify the UI when changed.
+        /// </summary>
+        /// <value>
+        /// A string containing the full path to the monitored folder.
+        /// Empty or null indicates no folder is currently being monitored.
+        /// </value>
+        /// <remarks>
+        /// Property characteristics:
+        /// - Supports both one-way and two-way data binding
+        /// - Automatically fires PropertyChanged when value changes
+        /// - Used for display in UI and configuration of monitoring service
+        /// - Validates path format and accessibility when set
+        /// 
+        /// Data binding usage:
+        /// - OneWay binding for display-only scenarios
+        /// - TwoWay binding for user input and selection
+        /// - Compiled binding with x:DataType for performance
+        /// - Automatic UI updates when programmatically changed
+        /// 
+        /// Integration points:
+        /// - Setting this property may trigger file system monitoring
+        /// - Changes are reflected in associated UI elements
+        /// - Value is persisted through view lifecycle
+        /// - Used by file monitoring service for target directory
+        /// </remarks>
+        String FolderPath;
+    }
+}

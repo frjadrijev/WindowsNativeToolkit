@@ -1,8 +1,76 @@
+/// <summary>
+/// Interface Definition Language (IDL) specification for the MainWindow component.
+/// Defines the Windows Runtime interface contract for the main application window.
+/// </summary>
+/// <remarks>
+/// This IDL file serves as the contract definition for the MainWindow runtime class,
+/// which inherits from the standard WinUI Window class. The IDL is processed by the
+/// MIDL compiler to generate:
+/// - Type metadata (.winmd files)
+/// - C++/WinRT projection headers
+/// - Factory implementation templates
+/// - Activation support code
+/// 
+/// Design patterns:
+/// - Inherits from Microsoft.UI.Xaml.Window for standard window functionality
+/// - Uses [default_interface] attribute for primary interface designation
+/// - Provides parameterless constructor for activation factory support
+/// 
+/// Build process:
+/// 1. MIDL compiler processes this IDL during build
+/// 2. Generates MainWindow.g.h and MainWindow.g.cpp files
+/// 3. Creates type information for runtime activation
+/// 4. Enables XAML markup integration through x:Class attribute
+/// </remarks>
 namespace WindowsNativeToolkit
 {
+    /// <summary>
+    /// Runtime class definition for the main application window.
+    /// Provides the primary user interface container for the WindowsNativeToolkit application.
+    /// </summary>
+    /// <remarks>
+    /// This runtime class serves as the main entry point for user interaction and houses
+    /// the primary navigation infrastructure for the application. It inherits all standard
+    /// window capabilities from Microsoft.UI.Xaml.Window including:
+    /// 
+    /// - Window lifecycle management (show, hide, close)
+    /// - Title bar and system integration
+    /// - Content hosting and layout management
+    /// - Standard window events and input handling
+    /// - Theme and styling support
+    /// 
+    /// The [default_interface] attribute designates this as the primary interface
+    /// for the runtime class, which is required for proper XAML integration and
+    /// factory activation.
+    /// 
+    /// Usage in XAML:
+    /// The x:Class attribute in MainWindow.xaml references this runtime class,
+    /// enabling the XAML markup compiler to generate the appropriate bindings
+    /// and event handler connections.
+    /// </remarks>
     [default_interface]
     runtimeclass MainWindow : Microsoft.UI.Xaml.Window
     {
+        /// <summary>
+        /// Default constructor for the MainWindow runtime class.
+        /// Required for WinRT activation factory support and XAML instantiation.
+        /// </summary>
+        /// <remarks>
+        /// This constructor is called by:
+        /// - The WinRT activation factory when creating instances
+        /// - XAML markup processing when parsing MainWindow.xaml
+        /// - Direct instantiation from C++ code using winrt::make
+        /// 
+        /// The actual initialization logic is implemented in the C++ implementation
+        /// class, not in this IDL declaration. The constructor should:
+        /// - Initialize base Window class
+        /// - Set up initial window properties
+        /// - Prepare for XAML content loading
+        /// 
+        /// Note: XAML controls should not call InitializeComponent() in their
+        /// constructor but should defer initialization until after construction
+        /// to avoid COM activation issues.
+        /// </remarks>
         MainWindow();
     }
 }
