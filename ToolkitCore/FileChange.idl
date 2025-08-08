@@ -1,310 +1,59 @@
 /// <summary>
 /// ToolkitCore namespace containing file system monitoring components.
-/// Provides Windows Runtime classes for detecting and reporting file system changes
-/// with integration support for both native C++ and managed code environments.
+/// Provides Windows Runtime classes for file system change detection.
 /// </summary>
-/// <remarks>
-/// This namespace encapsulates the core functionality for file system monitoring,
-/// including change detection, event reporting, and cross-language interoperability
-/// through Windows Runtime projections.
-/// </remarks>
 namespace ToolkitCore
 {
     /// <summary>
     /// Enumeration defining the types of file system changes that can be detected.
-    /// Used to categorize file system operations for processing and display purposes.
+    /// Maps Win32 file notification types to user-friendly categories.
     /// </summary>
-    /// <remarks>
-    /// This enumeration provides a simplified classification of file system events,
-    /// mapping complex Win32 file notification types to user-friendly categories.
-    /// The values are designed to be:
-    /// - Easy to understand and process
-    /// - Suitable for UI display and logging
-    /// - Compatible with common file monitoring scenarios
-    /// - Extensible for future change types
-    /// 
-    /// Mapping to Win32 notifications:
-    /// - Added: FILE_ACTION_ADDED, FILE_ACTION_RENAMED_NEW_NAME
-    /// - Removed: FILE_ACTION_REMOVED, FILE_ACTION_RENAMED_OLD_NAME  
-    /// - Modified: FILE_ACTION_MODIFIED, attribute changes
-    /// 
-    /// Usage patterns:
-    /// - Switch statements for change type processing
-    /// - UI filtering and categorization
-    /// - Logging and audit trail generation
-    /// - Conditional processing based on change severity
-    /// </remarks>
     enum ChangeType
     {
-        /// <summary>
-        /// Indicates a file or directory was created or moved into the monitored location.
-        /// This includes new file creation, directory creation, and move operations
-        /// where the destination is within the monitored scope.
-        /// </summary>
-        /// <remarks>
-        /// Triggers for Added events:
-        /// - New file creation (File.Create, touch, etc.)
-        /// - New directory creation (Directory.Create, mkdir, etc.)  
-        /// - Files moved from outside monitored area into monitored area
-        /// - Files renamed from non-monitored to monitored names
-        /// - Network file transfers completing
-        /// - Application file saves creating new files
-        /// 
-        /// Note: Some operations may generate both Removed and Added events
-        /// (e.g., move operations within the monitored directory tree).
-        /// </remarks>
+        /// <summary>File or directory was created or moved into monitored location.</summary>
         Added = 0,
 
-        /// <summary>
-        /// Indicates a file or directory was deleted or moved out of the monitored location.
-        /// This includes explicit deletion and move operations where the source
-        /// was within the monitored scope.
-        /// </summary>
-        /// <remarks>
-        /// Triggers for Removed events:
-        /// - File deletion (File.Delete, rm, del, etc.)
-        /// - Directory deletion (Directory.Delete, rmdir, etc.)
-        /// - Files moved from monitored area to outside monitored area
-        /// - Files renamed from monitored to non-monitored names
-        /// - Recycle bin operations
-        /// - Application cleanup operations
-        /// 
-        /// Security considerations:
-        /// - May indicate security-related file removal
-        /// - Useful for audit trails and compliance monitoring
-        /// - Consider logging Removed events for critical files
-        /// </remarks>
+        /// <summary>File or directory was deleted or moved out of monitored location.</summary>
         Removed = 1,
 
-        /// <summary>
-        /// Indicates an existing file or directory was modified in place.
-        /// This covers content changes, attribute updates, and metadata modifications
-        /// without changing the file's location or existence.
-        /// </summary>
-        /// <remarks>
-        /// Triggers for Modified events:
-        /// - File content changes (write operations, append, truncate)
-        /// - File attribute changes (readonly, hidden, system flags)
-        /// - Timestamp updates (last modified, last accessed)
-        /// - Security descriptor changes (permissions, ownership)
-        /// - File size changes without content replacement
-        /// - Metadata updates (file properties, extended attributes)
-        /// 
-        /// Performance considerations:
-        /// - Most frequent change type in active systems
-        /// - May generate multiple events for single user operation
-        /// - Consider debouncing for frequently modified files
-        /// - Filter by file type to reduce noise
-        /// 
-        /// Common scenarios:
-        /// - Document editing and saving
-        /// - Log file updates
-        /// - Database file modifications
-        /// - Configuration file changes
-        /// </remarks>
+        /// <summary>Existing file or directory was modified in place.</summary>
         Modified = 2
     };
 
     /// <summary>
     /// Windows Runtime class representing a single file system change event.
-    /// Encapsulates all information about a detected file system modification
-    /// including location, type of change, and timing information.
+    /// Provides cross-language compatible file change notification data.
     /// </summary>
     /// <remarks>
-    /// This runtime class serves as the primary data container for file system
-    /// change notifications, providing a standardized interface for consuming
-    /// file monitoring events across different programming languages and frameworks.
-    /// 
-    /// Design principles:
-    /// - Immutable once created (recommend treating as read-only after construction)
-    /// - Lightweight and efficient for high-frequency events
-    /// - Cross-language compatible through Windows Runtime projection
-    /// - Self-contained with all necessary information for processing
-    /// 
-    /// Usage patterns:
-    /// - Event payloads in file monitoring callbacks
-    /// - Data binding sources for UI display
-    /// - Logging and audit trail records
-    /// - Change analysis and processing pipelines
-    /// 
-    /// Thread safety:
-    /// - Safe to access from multiple threads once constructed
-    /// - Property reads are atomic through WinRT infrastructure
-    /// - Recommend treating instances as immutable after creation
-    /// 
-    /// Performance characteristics:
-    /// - Minimal memory footprint for efficient event queuing
-    /// - Fast construction for high-frequency monitoring scenarios
-    /// - Efficient marshaling across COM boundaries
-    /// - Suitable for real-time processing requirements
-    /// 
-    /// Cross-language projection:
-    /// - C++: winrt::ToolkitCore::FileChange
-    /// - C#: ToolkitCore.FileChange  
-    /// - JavaScript: ToolkitCore.FileChange (if projected)
-    /// - VB.NET: ToolkitCore.FileChange
+    /// WinRT interface contract:
+    /// - [default_interface] designates primary interface for runtime activation
+    /// - Supports both parameterless and parameterized construction
+    /// - Exposes bindable properties for cross-language access
+    /// - Compatible with WinRT projection and activation patterns
     /// </remarks>
     [default_interface]
     runtimeclass FileChange
     {
         /// <summary>
-        /// Default constructor creating an empty FileChange instance.
-        /// Initializes all properties to default values for later assignment.
+        /// Default constructor required for WinRT activation factory support.
         /// </summary>
-        /// <remarks>
-        /// Default values:
-        /// - Path: empty string
-        /// - Type: ChangeType.Added  
-        /// - Timestamp: 0 (represents uninitialized/invalid time)
-        /// 
-        /// Usage scenarios:
-        /// - Creating instances for later property assignment
-        /// - Placeholder objects in collections or data structures
-        /// - Default values in optional parameters
-        /// - Testing and mocking scenarios
-        /// 
-        /// This constructor is required for WinRT activation factory support
-        /// and enables creation through generic factory patterns.
-        /// </remarks>
         FileChange();
 
         /// <summary>
-        /// Parameterized constructor creating a fully-initialized FileChange instance.
-        /// Enables direct creation with all properties set to specific values.
+        /// Parameterized constructor for direct initialization with change data.
         /// </summary>
-        /// <param name="path">
-        /// Full path to the file or directory that changed. Should be an absolute path
-        /// for unambiguous identification. Empty string is valid for system-wide events.
-        /// </param>
-        /// <param name="type">
-        /// Type of change that occurred (Added, Removed, or Modified).
-        /// Determines how the change should be processed and displayed.
-        /// </param>
-        /// <param name="timestamp">
-        /// Timestamp when the change occurred, typically milliseconds since Unix epoch.
-        /// Value of 0 indicates timestamp is not available or not applicable.
-        /// </param>
-        /// <remarks>
-        /// This constructor is the preferred method for creating FileChange instances
-        /// in monitoring scenarios where all information is available at creation time.
-        /// 
-        /// Parameter validation:
-        /// - Path validation is performed in property setter if needed
-        /// - Type must be valid ChangeType enumeration value
-        /// - Timestamp should be consistent format (recommend Unix epoch milliseconds)
-        /// 
-        /// Usage patterns:
-        /// - File monitoring callback event creation
-        /// - Converting from native Win32 file notifications
-        /// - Test data generation with known values
-        /// - API responses containing change information
-        /// 
-        /// Performance benefits:
-        /// - Single construction call sets all properties
-        /// - Avoids multiple property change notifications
-        /// - Efficient for high-frequency event generation
-        /// - Reduces total allocation overhead
-        /// </remarks>
+        /// <param name="path">Full path to the changed file or directory</param>
+        /// <param name="type">Type of change (Added, Removed, Modified)</param>
+        /// <param name="timestamp">Timestamp when change occurred (milliseconds since Unix epoch)</param>
         FileChange(String path, ChangeType type, UInt64 timestamp);
 
-        /// <summary>
-        /// Gets or sets the full path to the file or directory that changed.
-        /// Provides the location information necessary to identify the changed item.
-        /// </summary>
-        /// <value>
-        /// String containing the full path to the changed file or directory.
-        /// Should be an absolute path for unambiguous identification.
-        /// Empty string indicates path is not available or not applicable.
-        /// </value>
-        /// <remarks>
-        /// Path format considerations:
-        /// - Should use native path separators for the target platform
-        /// - Recommend absolute paths to avoid ambiguity
-        /// - May include UNC paths for network resources
-        /// - Consider path length limitations on target platforms
-        /// 
-        /// Security considerations:
-        /// - Paths may contain sensitive information
-        /// - Consider sanitization for logging or display
-        /// - Validate path format to prevent injection attacks
-        /// - Be aware of symbolic link resolution behavior
-        /// 
-        /// Usage patterns:
-        /// - File operation targeting
-        /// - UI display and user notification
-        /// - Logging and audit trail generation
-        /// - Change filtering and pattern matching
-        /// 
-        /// Performance notes:
-        /// - String operations may have allocation overhead
-        /// - Consider caching frequently accessed paths
-        /// - Path comparison should use appropriate methods for platform
-        /// </remarks>
+        /// <summary>Full path to the file or directory that changed.</summary>
         String Path;
 
-        /// <summary>
-        /// Gets or sets the type of change that occurred.
-        /// Categorizes the file system operation for processing and display purposes.
-        /// </summary>
-        /// <value>
-        /// ChangeType enumeration value indicating whether the item was added,
-        /// removed, or modified. Determines appropriate processing and user feedback.
-        /// </value>
-        /// <remarks>
-        /// Processing guidelines by type:
-        /// - Added: May trigger indexing, scanning, or welcome processes
-        /// - Removed: May trigger cleanup, archiving, or notification processes  
-        /// - Modified: May trigger re-processing, validation, or update processes
-        /// 
-        /// UI presentation:
-        /// - Different icons or colors for different change types
-        /// - Filtering options to show/hide specific change types
-        /// - Sorting and grouping by change type
-        /// - Summary statistics by change type
-        /// 
-        /// Business logic integration:
-        /// - Workflow triggers based on change type
-        /// - Security monitoring for unexpected removals
-        /// - Performance monitoring for excessive modifications
-        /// - Compliance reporting categorized by change type
-        /// </remarks>
+        /// <summary>Type of change that occurred.</summary>
         ChangeType Type;
 
-        /// <summary>
-        /// Gets or sets the timestamp when the change occurred.
-        /// Provides temporal information for sequencing and analysis purposes.
-        /// </summary>
-        /// <value>
-        /// 64-bit unsigned integer representing the timestamp, typically milliseconds
-        /// since Unix epoch (January 1, 1970 UTC). Value of 0 indicates timestamp
-        /// is not available or not applicable.
-        /// </value>
-        /// <remarks>
-        /// Timestamp format:
-        /// - Recommended: milliseconds since Unix epoch for cross-platform compatibility
-        /// - Compatible with JavaScript Date.now() and .NET DateTime conversions
-        /// - Provides sufficient precision for most monitoring scenarios
-        /// - Consider time zone implications for distributed systems
-        /// 
-        /// Usage scenarios:
-        /// - Change sequencing and ordering
-        /// - Time-based filtering and analysis
-        /// - Performance monitoring and metrics
-        /// - Audit trail and compliance reporting
-        /// - Change frequency analysis
-        /// 
-        /// Conversion examples:
-        /// - C#: DateTimeOffset.FromUnixTimeMilliseconds(timestamp)
-        /// - JavaScript: new Date(timestamp)
-        /// - C++: std::chrono::milliseconds(timestamp)
-        /// 
-        /// Precision considerations:
-        /// - File system timestamp precision varies by platform
-        /// - NTFS: 100-nanosecond precision
-        /// - ext4: nanosecond precision  
-        /// - FAT32: 2-second precision
-        /// - Consider precision requirements for your use case
-        /// </remarks>
+        /// <summary>Timestamp when the change occurred (milliseconds since Unix epoch).</summary>
         UInt64 Timestamp;
     };
 }

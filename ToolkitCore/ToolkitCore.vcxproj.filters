@@ -11,18 +11,18 @@
     <Filter Include="Models">
       <UniqueIdentifier>{a5929b27-04ba-413f-8ada-645375af4933}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utils">
-      <UniqueIdentifier>{631bee32-4cfa-41b6-bc80-59d43ac9d2a2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Services">
       <UniqueIdentifier>{848f124d-4152-4cd1-bfdd-0b77f4a09f3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Services\Utils">
+      <UniqueIdentifier>{631bee32-4cfa-41b6-bc80-59d43ac9d2a2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="PathHelpers.cpp">
-      <Filter>Utils</Filter>
+      <Filter>Services\Utils</Filter>
     </ClCompile>
     <ClCompile Include="FileWatcherService.cpp">
       <Filter>Services</Filter>
@@ -40,7 +40,7 @@
       <Filter>Models</Filter>
     </ClInclude>
     <ClInclude Include="PathHelpers.h">
-      <Filter>Utils</Filter>
+      <Filter>Services\Utils</Filter>
     </ClInclude>
     <ClInclude Include="FileWatcherService.h">
       <Filter>Services</Filter>

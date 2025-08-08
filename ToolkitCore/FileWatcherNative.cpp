@@ -1,6 +1,5 @@
 ﻿#include "pch.h"                     // PCH  
 #include "FileWatcherNative.h"       // own header
-
 // Win32 → WinRT helpers
 #include <chrono>
 #include <pathcch.h>                 // PathCchCombine
@@ -59,15 +58,17 @@ namespace native::ToolkitCore
         // - No need to join thread as cleanup is handled by atomic signaling
         //
         std::thread(
-            [this, 
-            h = wil::unique_handle
-            { 
-                _handle.release() 
-            }, 
-            dir = std::wstring
-            { 
-                folder 
-            }]()
+            [
+                this,
+                h = wil::unique_handle
+                {
+                    _handle.release()
+                },
+                dir = std::wstring
+                {
+                    folder
+                }
+            ]()
             {
                 // Main monitoring loop - continues until _running flag is cleared
                 while (_running.load())
