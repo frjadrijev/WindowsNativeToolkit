@@ -39,8 +39,6 @@ namespace winrt::ToolkitCore::implementation
         /// </summary>
         FileWatcherService() = default;
 
-        // IFileWatcherService interface implementations
-
         /// <summary>
         /// Begins monitoring the specified folder for file system changes.
         /// This method activates the underlying native file watcher and starts
@@ -64,22 +62,30 @@ namespace winrt::ToolkitCore::implementation
         /// 
         /// The monitoring operation runs on a background thread and will continue
         /// until Stop() is called or the object is destroyed.
+        /// 
+        /// Implementation details:
+        /// - Delegates to the native watcher's Start method with folder path
+        /// - Creates internal callback that converts native events to WinRT events
+        /// - Uses weak reference pattern to prevent circular references
+        /// - Creates projected FileChange objects from native change data
+        /// - Fires WinRT events with proper lifetime management
+        /// 
+        /// Event handling architecture:
+        /// - Internal callback uses get_weak() to avoid strong references that could
+        ///   prevent proper cleanup
+        /// - If the service is destroyed when a callback fires, the weak reference
+        ///   returns null and the event is silently ignored
+        /// - Native FileChange objects are converted to projected WinRT FileChange objects
+        /// - WinRT Changed event is fired with this service as sender and change data
+        /// 
+        /// Thread safety:
+        /// - Method execution is thread-safe through atomic operations in native layer
+        /// - Event callbacks are fired on background monitoring thread
+        /// - Weak reference pattern ensures safe cleanup during destruction
+        /// - No external synchronization required for start/stop operations
         /// </remarks>
         void Start(winrt::hstring const& folder);
 
-        /// <summary>
-        /// Stops monitoring the current folder and releases all associated resources.
-        /// This method cleanly shuts down the background monitoring thread and
-        /// ensures no further events will be raised.
-        /// </summary>
-        /// <remarks>
-        /// This method is safe to call multiple times and will gracefully handle
-        /// cases where monitoring is not currently active. It blocks until the
-        /// monitoring thread has completely shut down, ensuring no race conditions.
-        /// 
-        /// After calling Stop(), the service can be restarted by calling Start()
-        /// again with the same or different folder path.
-        /// </remarks>
         void Stop();
 
         /// <summary>

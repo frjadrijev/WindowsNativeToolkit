@@ -53,59 +53,61 @@ namespace native::ToolkitCore
     struct FileWatcherNative
     {  
         /// <summary>
-        /// Begins monitoring the specified folder for file system changes.
-        /// Creates a background thread that continuously monitors for changes
-        /// and invokes the provided callback when changes are detected.
+        /// Starts file system monitoring for the specified folder.
+        /// Creates a background thread that uses Win32 change notifications
+        /// to detect file system modifications and invoke the provided callback.
         /// </summary>
-        /// <param name="folder">
-        /// Full path to the directory to monitor. Must exist and be accessible.
-        /// The path should be in native Windows format (backslashes).
-        /// </param>
-        /// <param name="changeCallback">
-        /// Function to call when changes are detected. The callback receives
-        /// a FileChange object with details about the specific change.
-        /// Must remain valid until Stop() is called.
-        /// </param>
-        /// <exception cref="winrt::hresult_invalid_argument">
-        /// Thrown if folder parameter is empty.
-        /// </exception>
-        /// <exception cref="winrt::hresult_error">
-        /// Thrown if the folder doesn't exist, access is denied, or Win32
-        /// APIs fail to initialize the file monitoring handle.
-        /// </exception>
+        /// <param name="folder">Directory path to monitor (WinRT hstring)</param>
+        /// <param name="changeCallback">Function to call when changes are detected</param>
         /// <remarks>
-        /// Implementation uses FindFirstChangeNotification for basic monitoring.
-        /// For production use, consider upgrading to ReadDirectoryChangesW for
-        /// more detailed change information including specific file names and
-        /// operation types.
+        /// Implementation details:
         /// 
-        /// The monitoring includes:
-        /// - FILE_NOTIFY_CHANGE_FILE_NAME: File creation, deletion, rename
-        /// - FILE_NOTIFY_CHANGE_SIZE: File size changes
-        /// - Recursive monitoring of all subdirectories
+        /// Win32 API Usage:
+        /// - Uses FindFirstChangeNotification for basic change detection
+        /// - Monitors FILE_NOTIFY_CHANGE_FILE_NAME and FILE_NOTIFY_CHANGE_SIZE
+        /// - Enables recursive monitoring (TRUE parameter) for subdirectories
         /// 
-        /// Thread safety:
-        /// This method uses atomic operations to prevent race conditions.
-        /// If already monitoring, subsequent calls are ignored safely.
+        /// Threading Strategy:
+        /// - Creates detached background thread for monitoring loop
+        /// - Thread polls with 250ms timeout to allow responsive shutdown
+        /// - Uses move semantics to transfer handle ownership to thread
+        /// - Copies folder path for thread-local access
+        /// 
+        /// Limitations:
+        /// - Uses simplified change detection (whole folder events)
+        /// - For production, consider upgrading to ReadDirectoryChangesW
+        /// - Current implementation creates synthetic "Modified" events
+        /// - Timestamp uses system_clock for cross-platform compatibility
+        /// 
+        /// Error Handling:
+        /// - Validates input parameters before proceeding
+        /// - Checks for duplicate start requests using atomic exchange
+        /// - Throws WinRT exceptions for Win32 API failures
+        /// - Uses RAII for automatic resource cleanup
         /// </remarks>
         void Start(winrt::hstring const& folder, ChangeCallback changeCallback);  
 
         /// <summary>
-        /// Stops monitoring and releases all associated resources.
-        /// Safely shuts down the background monitoring thread and closes Win32 handles.
+        /// Stops file system monitoring and performs cleanup.
+        /// Uses atomic signaling to safely shut down the background thread
+        /// and releases all Win32 resources.
         /// </summary>
         /// <remarks>
-        /// Shutdown process:
-        /// 1. Sets atomic flag to signal monitoring thread to exit
-        /// 2. Closes the Win32 change notification handle
-        /// 3. Waits for background thread to complete (via detached thread cleanup)
-        /// 4. Resets all member variables to initial state
+        /// Shutdown sequence:
+        /// 1. Set atomic _running flag to false (signals thread to exit)
+        /// 2. Close Win32 change notification handle (may wake waiting thread)
+        /// 3. Reset handle to null state for clean reinitialization
         /// 
-        /// This method is safe to call multiple times and from multiple threads.
-        /// It will gracefully handle cases where monitoring is not active.
+        /// Thread safety considerations:
+        /// - Uses atomic operations to coordinate with background thread
+        /// - Handle operations are safe because background thread has its own copy
+        /// - Method can be called multiple times safely (idempotent)
+        /// - No explicit thread joining required due to timeout-based polling
         /// 
-        /// The method uses a timeout-based approach in the monitoring loop,
-        /// so shutdown typically completes within 250ms (the polling interval).
+        /// Performance notes:
+        /// - Shutdown typically completes within 250ms (polling timeout)
+        /// - Background thread will exit at next timeout check
+        /// - Win32 handle closure may immediately wake the waiting thread
         /// </remarks>
         void Stop();  
 

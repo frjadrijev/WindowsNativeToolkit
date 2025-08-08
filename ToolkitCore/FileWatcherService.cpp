@@ -1,185 +1,41 @@
-﻿    #include "pch.h"                     // PCH  
-#include "FileWatcherNative.h"       // own header
+﻿#include "pch.h"
+#include "FileWatcherService.h"
+#if __has_include("FileWatcherService.g.cpp")
+#include "FileWatcherService.g.cpp"
+#endif
 
-// Win32 → WinRT helpers
-#include <chrono>
-#include <pathcch.h>                 // PathCchCombine
-#pragma comment(lib, "Pathcch.lib")
-
-using namespace winrt;
-using namespace std::chrono;
-
-namespace native::ToolkitCore
+namespace winrt::ToolkitCore::implementation
 {
-    /// <summary>
-    /// Starts file system monitoring for the specified folder.
-    /// Creates a background thread that uses Win32 change notifications
-    /// to detect file system modifications and invoke the provided callback.
-    /// </summary>
-    /// <param name="folder">Directory path to monitor (WinRT hstring)</param>
-    /// <param name="changeCallback">Function to call when changes are detected</param>
-    /// <remarks>
-    /// Implementation details:
-    /// 
-    /// Win32 API Usage:
-    /// - Uses FindFirstChangeNotification for basic change detection
-    /// - Monitors FILE_NOTIFY_CHANGE_FILE_NAME and FILE_NOTIFY_CHANGE_SIZE
-    /// - Enables recursive monitoring (TRUE parameter) for subdirectories
-    /// 
-    /// Threading Strategy:
-    /// - Creates detached background thread for monitoring loop
-    /// - Thread polls with 250ms timeout to allow responsive shutdown
-    /// - Uses move semantics to transfer handle ownership to thread
-    /// - Copies folder path for thread-local access
-    /// 
-    /// Limitations:
-    /// - Uses simplified change detection (whole folder events)
-    /// - For production, consider upgrading to ReadDirectoryChangesW
-    /// - Current implementation creates synthetic "Modified" events
-    /// - Timestamp uses system_clock for cross-platform compatibility
-    /// 
-    /// Error Handling:
-    /// - Validates input parameters before proceeding
-    /// - Checks for duplicate start requests using atomic exchange
-    /// - Throws WinRT exceptions for Win32 API failures
-    /// - Uses RAII for automatic resource cleanup
-    /// </remarks>
-    void FileWatcherNative::Start(hstring const& folder,
-        ChangeCallback  changeCallback)
+    void FileWatcherService::Start(hstring const& folder)
     {
-        // Validate input parameters
-        if (folder.empty())
-            winrt::throw_hresult(E_INVALIDARG);
-
-        // Prevent concurrent start requests using atomic exchange
-        // If already running, silently return (idempotent operation)
-        if (_running.exchange(true))
-            return;                              // already running
-
-        //
-        // Initialize Win32 file change notification handle
-        // Uses FindFirstChangeNotification for basic monitoring
-        //
-        _handle = wil::unique_handle{ 
-            FindFirstChangeNotificationW(
-                folder.c_str(),                  // Directory to monitor
-                TRUE,                           // Monitor subdirectories recursively
-                FILE_NOTIFY_CHANGE_FILE_NAME |  // File create/delete/rename
-                FILE_NOTIFY_CHANGE_SIZE         // File size changes
-            ) 
-        };
-
-        // Check for Win32 API failure and convert to WinRT exception
-        if (_handle.get() == INVALID_HANDLE_VALUE)
-            winrt::throw_last_error();
-
-        // Store callback for use in background thread
-        _callback = std::move(changeCallback);
-
-        //
-        // Create detached background thread for monitoring loop
-        // 
-        // Thread capture strategy:
-        // - Move handle ownership to thread (h = _handle.release())
-        // - Copy folder path for thread-local access (dir = std::wstring{folder})
-        // - Capture 'this' pointer for accessing member variables
-        //
-        // Detached thread is appropriate here because:
-        // - FileWatcherNative lifetime is managed by WinRT facade
-        // - Thread will exit cleanly when _running flag is cleared
-        // - No need to join thread as cleanup is handled by atomic signaling
-        //
-        std::thread([this, h = wil::unique_handle{ _handle.release() }, dir = std::wstring{ folder }]
+        // Start native watcher with internal callback that converts native events to WinRT events
+        m_native.Start(folder, [weak = get_weak()](auto const& fcNative)
+        {
+            // Use weak reference to prevent circular references and enable proper cleanup
+            if (auto self = weak.get())
             {
-                // Main monitoring loop - continues until _running flag is cleared
-                while (_running.load())
-                {
-                    // Wait for change notification with timeout for responsive shutdown
-                    if (WaitForSingleObject(h.get(), 250) == WAIT_OBJECT_0)
-                    {
-                        //
-                        // ► File system change detected - create notification event
-                        //
-                        // NOTE: This is a simplified implementation for demonstration.
-                        // Production code should use ReadDirectoryChangesW to get:
-                        // - Specific file names that changed
-                        // - Exact operation types (FILE_ACTION_ADDED, etc.)
-                        // - Multiple changes in a single notification batch
-                        //
-                        // Current implementation creates a synthetic event for the
-                        // entire monitored folder with a wildcard path.
-                        //
-
-                        // Generate timestamp using high-resolution system clock
-                        auto ts = duration_cast<milliseconds>(
-                            system_clock::now().time_since_epoch()
-                        ).count();
-
-                        // Build full path with wildcard for folder monitoring
-                        // Uses PathCchCombine for safe path manipulation
-                        wchar_t pathBuf[MAX_PATH]{};
-                        PathCchCombine(pathBuf, std::size(pathBuf), dir.c_str(), L"*");
-
-                        // Create WinRT FileChange object with synthetic data
-                        winrt::ToolkitCore::FileChange change{ 
-                            winrt::hstring(pathBuf),                    // Path with wildcard
-                            winrt::ToolkitCore::ChangeType::Modified,   // Synthetic change type
-                            static_cast<uint64_t>(ts)                   // Current timestamp
-                        };
-
-                        // Invoke the registered callback with change details
-                        // Callback is responsible for thread-safe handling
-                        _callback(change);
-
-                        // Re-arm the Win32 change notification for next event
-                        // This is required for FindFirstChangeNotification API
-                        FindNextChangeNotification(h.get());
-                    }
-                    // If timeout occurred (no changes), loop continues for shutdown check
-                }
-                // Thread exits when _running becomes false
-                // Automatic cleanup of local variables (handle, strings)
-            }).detach();
+                // Convert native FileChange to projected WinRT FileChange
+                ToolkitCore::FileChange fcProjected{ fcNative.Path(), fcNative.Type(), fcNative.Timestamp() };
+                
+                // Fire the WinRT event with this service as sender and projected change data
+                self->m_changed(*self, fcProjected);
+            }
+            // If weak reference is null, service was destroyed - silently ignore event
+        });
     }
 
-    /// <summary>
-    /// Stops file system monitoring and performs cleanup.
-    /// Uses atomic signaling to safely shut down the background thread
-    /// and releases all Win32 resources.
-    /// </summary>
-    /// <remarks>
-    /// Shutdown sequence:
-    /// 1. Set atomic _running flag to false (signals thread to exit)
-    /// 2. Close Win32 change notification handle (may wake waiting thread)
-    /// 3. Reset handle to null state for clean reinitialization
-    /// 
-    /// Thread safety considerations:
-    /// - Uses atomic operations to coordinate with background thread
-    /// - Handle operations are safe because background thread has its own copy
-    /// - Method can be called multiple times safely (idempotent)
-    /// - No explicit thread joining required due to timeout-based polling
-    /// 
-    /// Performance notes:
-    /// - Shutdown typically completes within 250ms (polling timeout)
-    /// - Background thread will exit at next timeout check
-    /// - Win32 handle closure may immediately wake the waiting thread
-    /// </remarks>
-    void FileWatcherNative::Stop()
+    void FileWatcherService::Stop()
     {
-        // Signal background thread to stop monitoring
-        // Atomic store ensures visibility across threads immediately
-        _running = false;
+        m_native.Stop();
+    }
 
-        // Close Win32 change notification handle if valid
-        // This may wake the background thread immediately if it's waiting
-        if (_handle)
-        {
-            ::FindCloseChangeNotification(_handle.get());
-            _handle.reset();  // Reset to null for clean state
-        }
-
-        // Note: No explicit thread joining required
-        // Background thread will exit at next polling check (≤250ms)
-        // Detached thread cleanup is handled automatically by runtime
+    event_token FileWatcherService::Changed(FileWatcherChangedHandler const& handler)
+    {
+        return m_changed.add(handler);
+    }
+    
+    void FileWatcherService::Changed(event_token const& token)
+    {
+        m_changed.remove(token);
     }
 }

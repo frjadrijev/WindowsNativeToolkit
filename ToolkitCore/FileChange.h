@@ -44,14 +44,14 @@ namespace winrt::ToolkitCore::implementation
         FileChange(hstring const& path, ChangeType type, uint64_t timestamp) : 
             m_path{ path }, m_type{ type }, m_timestamp{ timestamp } {}
 
-        /* -------- Property implementations with validation ------------------- */
+        /* -------- Properties ------------------- */
 
         /// <summary>
         /// Gets the file path associated with this change event.
         /// </summary>
         /// <returns>A Windows Runtime string containing the full path to the changed item</returns>
-        hstring Path() const { return m_path; }
-        
+        hstring Path() const;
+
         /// <summary>
         /// Sets the file path associated with this change event.
         /// </summary>
@@ -62,23 +62,19 @@ namespace winrt::ToolkitCore::implementation
         /// of the changed file or directory. Relative paths may lead to confusion in
         /// multi-threaded scenarios or when the working directory changes.
         /// </remarks>
-        void Path(hstring const& value)
-        {
-            if (value.empty()) throw hresult_invalid_argument();
-            m_path = value;
-        }
+        void Path(hstring const& value);
 
         /// <summary>
         /// Gets the type of change that occurred.
         /// </summary>
         /// <returns>A ChangeType enum value indicating whether the item was added, modified, or removed</returns>
-        ChangeType Type() const { return m_type; }
-        
+        ChangeType Type() const;
+
         /// <summary>
         /// Sets the type of change that occurred.
         /// </summary>
         /// <param name="value">The type of change (Added, Modified, or Removed)</param>
-        void Type(ChangeType value) { m_type = value; }
+        void Type(ChangeType value);
 
         /// <summary>
         /// Gets the timestamp when the change occurred.
@@ -92,7 +88,7 @@ namespace winrt::ToolkitCore::implementation
         /// .NET DateTime.Ticks / 10000, making it easy to convert for display
         /// or comparison purposes in various runtime environments.
         /// </remarks>
-        uint64_t Timestamp() const { return m_timestamp; }
+        uint64_t Timestamp() const;
         
         /// <summary>
         /// Sets the timestamp when the change occurred.
@@ -101,7 +97,7 @@ namespace winrt::ToolkitCore::implementation
         /// Timestamp value, typically milliseconds since Unix epoch.
         /// A value of 0 indicates an unspecified or invalid timestamp.
         /// </param>
-        void Timestamp(uint64_t value) { m_timestamp = value; }
+        void Timestamp(uint64_t value);
 
     private:
         /// <summary>Full path to the file or directory that changed</summary>
